@@ -10,25 +10,36 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(name: string, age: number): Promise<void> {
-    const user = new User();
-    user.name = name;
-    user.age = age;
+  async create(
+    email: string,
+    password: string,
+    name: string,
+    age: number,
+  ): Promise<void> {
+    const user = this.usersRepository.create({
+      email,
+      password,
+      name,
+      age,
+    });
     await this.usersRepository.save(user);
   }
 
-  async update(id: number, name: string, age: number): Promise<void> {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (name) user.name = name;
-    if (age) user.age = age;
-    await this.usersRepository.update({ id }, user);
-  }
-
   async find(id: number) {
+    if (!id) return null;
     return this.usersRepository.findOneBy({ id });
   }
 
-  async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
+  async update(id: number, info: Partial<User>) {
+    const user = await this.find(id);
+    if (!user) return null;
+    Object.assign(user, info);
+    return this.usersRepository.save(user);
+  }
+
+  async remove(id: number) {
+    const user = await this.find(id);
+    if (!user) return null;
+    return this.usersRepository.remove(user);
   }
 }
