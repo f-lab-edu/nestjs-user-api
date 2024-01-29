@@ -8,9 +8,8 @@ import {
   Body,
 } from '@nestjs/common';
 
-import { UserDto } from './dto/user.dto';
+import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-import { User } from './interfaces/user.interface';
 
 @Controller('users')
 export class UsersController {
@@ -23,7 +22,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  async find(@Param('id') id: number): Promise<User> {
+  async find(@Param('id') id: number) {
     return this.usersService.find(id);
   }
 
