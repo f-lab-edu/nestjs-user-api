@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  Session,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -24,15 +25,30 @@ export class UsersController {
   ) {}
 
   @Post('/signup')
-  create(@Body() body: CreateUserDto) {
+  async create(
+    @Body() body: CreateUserDto,
+    @Session() session: Record<string, any>,
+  ) {
     const { email, password, name, age } = body;
-    return this.authService.signup(email, password, name, age);
+    const user = await this.authService.signup(email, password, name, age);
+    session.userId = user.id;
+    return user;
   }
 
   @Post('/signin')
-  signin(@Body() body: SignInUserDto) {
+  async signin(
+    @Body() body: SignInUserDto,
+    @Session() session: Record<string, any>,
+  ) {
     const { email, password } = body;
-    return this.authService.signin(email, password);
+    const user = await this.authService.signin(email, password);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('/signout')
+  signOut(@Session() session: Record<string, any>) {
+    session.userId = null;
   }
 
   @Get(':id')
