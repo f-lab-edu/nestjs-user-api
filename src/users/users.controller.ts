@@ -6,43 +6,47 @@ import {
   Delete,
   Param,
   Body,
-  NotFoundException,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { SignInUserDto } from './dtos/sign-in-user.dto';
 import { UsersService } from './users.service';
+import { AuthService } from './auth.service';
 import { SerializeUser } from './interceptors/serialize.interceptor';
 
-@Controller('users')
+@Controller('auth')
 @SerializeUser()
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {}
 
-  @Post()
-  async create(@Body() body: CreateUserDto): Promise<void> {
+  @Post('/signup')
+  create(@Body() body: CreateUserDto) {
     const { email, password, name, age } = body;
-    await this.usersService.create(email, password, name, age);
+    return this.authService.signup(email, password, name, age);
+  }
+
+  @Post('/signin')
+  signin(@Body() body: SignInUserDto) {
+    const { email, password } = body;
+    return this.authService.signin(email, password);
   }
 
   @Get(':id')
-  async find(@Param('id') id: string) {
-    const user = await this.usersService.find(parseInt(id));
-    if (!user) throw new NotFoundException('user not found');
-    return user;
+  find(@Param('id') id: string) {
+    return this.usersService.find(parseInt(id));
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    const user = await this.usersService.update(parseInt(id), body);
-    if (!user) throw new NotFoundException('user not found');
-    return user;
+  update(@Param('id') id: string, @Body() body: UpdateUserDto) {
+    return this.usersService.update(parseInt(id), body);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const user = await this.usersService.remove(parseInt(id));
-    if (!user) throw new NotFoundException('user not found');
-    return user;
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(parseInt(id));
   }
 }
