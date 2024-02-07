@@ -1,15 +1,5 @@
 version: '3'
 services:
-  mysql:
-    image: mysql:8.3
-    container_name: mysql_dev
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-    volumes:
-      - ./data/mysql:/var/lib/mysql
   app:
     image: nestjs/user-api:dev
     build:
@@ -21,6 +11,4 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    depends_on:
-      - mysql
     command: npm run start:dev
