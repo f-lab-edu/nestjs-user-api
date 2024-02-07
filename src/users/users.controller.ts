@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
 import { SerializeUser } from './interceptors/serialize-user.interceptor';
 import { AuthGuard } from './guards/auth.guard';
 
-@Controller('auth')
+@Controller('users')
 @SerializeUser()
 export class UsersController {
   constructor(
