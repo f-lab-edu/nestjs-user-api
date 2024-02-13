@@ -6,38 +6,68 @@ import {
   Delete,
   Param,
   Body,
+  Session,
+  UseGuards,
 } from '@nestjs/common';
 
-import { UserDto } from './dto/user.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
+import { SignInUserDto } from './dtos/sign-in-user.dto';
 import { UsersService } from './users.service';
-import { User } from './interfaces/user.interface';
+import { AuthService } from './auth.service';
+import { SerializeUser } from './interceptors/serialize-user.interceptor';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller('users')
+@SerializeUser()
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {}
 
-  @Post()
-  async create(@Body() createUserDto: UserDto): Promise<void> {
-    const { name, age } = createUserDto;
-    await this.usersService.create(name, age);
+  @Post('/signup')
+  async create(
+    @Body() body: CreateUserDto,
+    @Session() session: Record<string, any>,
+  ) {
+    const { email, password, name, age } = body;
+    const user = await this.authService.signup(email, password, name, age);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('/signin')
+  async signin(
+    @Body() body: SignInUserDto,
+    @Session() session: Record<string, any>,
+  ) {
+    const { email, password } = body;
+    const user = await this.authService.signin(email, password);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('/signout')
+  signOut(@Session() session: Record<string, any>) {
+    session.userId = null;
   }
 
   @Get(':id')
-  async find(@Param('id') id: number): Promise<User> {
-    return this.usersService.find(id);
+  @UseGuards(AuthGuard)
+  find(@Param('id') id: string) {
+    return this.usersService.find(parseInt(id));
   }
 
   @Put(':id')
-  async update(
-    @Param('id') id: number,
-    @Body() updateUserDto: UserDto,
-  ): Promise<void> {
-    const { name, age } = updateUserDto;
-    await this.usersService.update(id, name, age);
+  @UseGuards(AuthGuard)
+  update(@Param('id') id: string, @Body() body: UpdateUserDto) {
+    return this.usersService.update(parseInt(id), body);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
-    await this.usersService.remove(id);
+  @UseGuards(AuthGuard)
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(parseInt(id));
   }
 }
