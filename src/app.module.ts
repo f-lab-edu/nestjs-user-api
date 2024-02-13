@@ -11,7 +11,10 @@ import { User } from './users/entities/user.entity';
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.DATABASE_HOST,
+      host:
+        process.env.IS_DOCKER === 'true'
+          ? process.env.DATABASE_LOCAL_DOCKER_HOST
+          : process.env.DATABASE_LOCAL_HOST,
       port: 3306,
       username: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
