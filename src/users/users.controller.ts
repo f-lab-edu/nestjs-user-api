@@ -19,7 +19,6 @@ import { SerializeUser } from './interceptors/serialize-user.interceptor';
 import { AuthGuard } from './guards/auth.guard';
 
 @Controller('users')
-@SerializeUser()
 export class UsersController {
   constructor(
     private usersService: UsersService,
@@ -27,6 +26,7 @@ export class UsersController {
   ) {}
 
   @Post('/signup')
+  @SerializeUser()
   async create(
     @Body() body: CreateUserDto,
     @Session() session: Record<string, any>,
@@ -38,6 +38,7 @@ export class UsersController {
   }
 
   @Post('/signin')
+  @SerializeUser()
   async signin(
     @Body() body: SignInUserDto,
     @Session() session: Record<string, any>,
@@ -55,18 +56,21 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(AuthGuard)
+  @SerializeUser()
   find(@Param('id') id: string) {
     return this.usersService.find(parseInt(id));
   }
 
   @Put(':id')
   @UseGuards(AuthGuard)
+  @SerializeUser()
   update(@Param('id') id: string, @Body() body: UpdateUserDto) {
     return this.usersService.update(parseInt(id), body);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
+  @SerializeUser()
   remove(@Param('id') id: string) {
     return this.usersService.remove(parseInt(id));
   }
