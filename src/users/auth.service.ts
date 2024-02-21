@@ -14,11 +14,25 @@ const saltRounds = 10;
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
+  private async generatePassword(password: string) {
+    return bcrypt.hash(password, saltRounds);
+  }
+
+  private async validatePassword({
+    password,
+    storedPassword,
+  }: {
+    password: string;
+    storedPassword: string;
+  }) {
+    return bcrypt.compare(password, storedPassword);
+  }
+
   async signup({ email, password, name, age }: IUser) {
     const user = await this.usersService.findByEmail(email);
     if (user) throw new BadRequestException('email in use');
 
-    const hash = await bcrypt.hash(password, saltRounds);
+    const hash = await this.generatePassword(password);
 
     return this.usersService.create({ email, password: hash, name, age });
   }
@@ -29,7 +43,7 @@ export class AuthService {
 
     const { password: hash } = user;
 
-    if (!(await bcrypt.compare(password, hash))) {
+    if (!(await this.validatePassword({ password, storedPassword: hash }))) {
       throw new BadRequestException('bad password');
     }
     return user;
