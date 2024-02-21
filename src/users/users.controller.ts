@@ -32,7 +32,7 @@ export class UsersController {
     @Session() session: Record<string, any>,
   ) {
     const { email, password, name, age } = body;
-    const user = await this.authService.signup(email, password, name, age);
+    const user = await this.authService.signup({ email, password, name, age });
     session.userId = user.id;
     return user;
   }
@@ -44,7 +44,7 @@ export class UsersController {
     @Session() session: Record<string, any>,
   ) {
     const { email, password } = body;
-    const user = await this.authService.signin(email, password);
+    const user = await this.authService.signin({ email, password });
     session.userId = user.id;
     return user;
   }

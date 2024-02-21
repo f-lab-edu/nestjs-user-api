@@ -6,6 +6,7 @@ import {
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from './users.service';
+import { IUser } from './interfaces/user.interface';
 
 const saltRounds = 10;
 
@@ -13,16 +14,16 @@ const saltRounds = 10;
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async signup(email: string, password: string, name: string, age: number) {
+  async signup({ email, password, name, age }: IUser) {
     const user = await this.usersService.findByEmail(email);
     if (user) throw new BadRequestException('email in use');
 
     const hash = await bcrypt.hash(password, saltRounds);
 
-    return this.usersService.create(email, hash, name, age);
+    return this.usersService.create({ email, password: hash, name, age });
   }
 
-  async signin(email: string, password: string) {
+  async signin({ email, password }: Partial<IUser>) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('user not found');
 
