@@ -14,8 +14,8 @@ export class AuthService {
   constructor(private usersService: UsersService) {}
 
   async signup(email: string, password: string, name: string, age: number) {
-    const users = await this.usersService.findAll(email);
-    if (users.length) throw new BadRequestException('email in use');
+    const user = await this.usersService.findByEmail(email);
+    if (user) throw new BadRequestException('email in use');
 
     const hash = await bcrypt.hash(password, saltRounds);
 
@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   async signin(email: string, password: string) {
-    const [user] = await this.usersService.findAll(email);
+    const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('user not found');
 
     const { password: hash } = user;

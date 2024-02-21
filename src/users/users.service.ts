@@ -26,8 +26,8 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
-  findAll(email: string) {
-    return this.usersRepository.find({ where: { email } });
+  findByEmail(email: string) {
+    return this.usersRepository.findOneBy({ email });
   }
 
   async update(id: number, info: Partial<User>) {
