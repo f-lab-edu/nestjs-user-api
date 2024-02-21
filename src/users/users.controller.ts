@@ -8,6 +8,7 @@ import {
   Body,
   Session,
   UseGuards,
+  UseFilters,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -17,8 +18,10 @@ import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { SerializeUser } from './interceptors/serialize-user.interceptor';
 import { AuthGuard } from './guards/auth.guard';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @Controller('users')
+@UseFilters(new HttpExceptionFilter())
 export class UsersController {
   constructor(
     private usersService: UsersService,
