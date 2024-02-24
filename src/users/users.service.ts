@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { IUser } from './interfaces/user.interface';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(email: string, password: string, name: string, age: number) {
+  async create({ email, password, name, age }: IUser) {
     const user = this.usersRepository.create({
       email,
       password,
@@ -26,11 +27,11 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
-  findAll(email: string) {
-    return this.usersRepository.find({ where: { email } });
+  findByEmail(email: string) {
+    return this.usersRepository.findOneBy({ email });
   }
 
-  async update(id: number, info: Partial<User>) {
+  async update(id: number, info: Partial<IUser>) {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');
     Object.assign(user, info);
@@ -41,5 +42,10 @@ export class UsersService {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');
     return this.usersRepository.remove(user);
+  }
+
+  async checkDuplicatedUserByEmail(email: string) {
+    const user = await this.findByEmail(email);
+    return !!user;
   }
 }

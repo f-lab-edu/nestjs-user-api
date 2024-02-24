@@ -6,6 +6,7 @@ import {
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from './users.service';
+import { IUser } from './interfaces/user.interface';
 
 const saltRounds = 10;
 
@@ -13,22 +14,37 @@ const saltRounds = 10;
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async signup(email: string, password: string, name: string, age: number) {
-    const users = await this.usersService.findAll(email);
-    if (users.length) throw new BadRequestException('email in use');
-
-    const hash = await bcrypt.hash(password, saltRounds);
-
-    return this.usersService.create(email, hash, name, age);
+  private async hashPassword(password: string) {
+    return bcrypt.hash(password, saltRounds);
   }
 
-  async signin(email: string, password: string) {
-    const [user] = await this.usersService.findAll(email);
+  private async validatePassword({
+    password,
+    storedPassword,
+  }: {
+    password: string;
+    storedPassword: string;
+  }) {
+    return bcrypt.compare(password, storedPassword);
+  }
+
+  async signup({ email, password, name, age }: IUser) {
+    const isDuplicated =
+      await this.usersService.checkDuplicatedUserByEmail(email);
+    if (isDuplicated) throw new BadRequestException('email in use');
+
+    const hash = await this.hashPassword(password);
+
+    return this.usersService.create({ email, password: hash, name, age });
+  }
+
+  async signin({ email, password }: Partial<IUser>) {
+    const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('user not found');
 
     const { password: hash } = user;
 
-    if (!(await bcrypt.compare(password, hash))) {
+    if (!(await this.validatePassword({ password, storedPassword: hash }))) {
       throw new BadRequestException('bad password');
     }
     return user;
