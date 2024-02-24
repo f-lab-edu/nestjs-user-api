@@ -12,7 +12,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create({ email, password, name, age }: IUser) {
+  async create({ email, password, name, age }: Partial<IUser>) {
     const user = this.usersRepository.create({
       email,
       password,

@@ -10,6 +10,7 @@ export default () => ({
   databasePassword: process.env.DATABASE_PASSWORD,
   databaseDb: process.env.DATABASE_DB,
   databaseHost: getDatabaseHost(),
+  jwtSecret: process.env.JWT_SECRET,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,

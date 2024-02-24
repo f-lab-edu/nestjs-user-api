@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from './users.service';
@@ -12,7 +13,10 @@ const saltRounds = 10;
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
   private async hashPassword(password: string) {
     return bcrypt.hash(password, saltRounds);
@@ -28,17 +32,7 @@ export class AuthService {
     return bcrypt.compare(password, storedPassword);
   }
 
-  async signup({ email, password, name, age }: IUser) {
-    const isDuplicated =
-      await this.usersService.checkDuplicatedUserByEmail(email);
-    if (isDuplicated) throw new BadRequestException('email in use');
-
-    const hash = await this.hashPassword(password);
-
-    return this.usersService.create({ email, password: hash, name, age });
-  }
-
-  async signin({ email, password }: Partial<IUser>) {
+  async validateUser({ email, password }: Partial<IUser>) {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('user not found');
 
@@ -48,5 +42,22 @@ export class AuthService {
       throw new BadRequestException('bad password');
     }
     return user;
+  }
+
+  async signup({ email, password, name, age }: Partial<IUser>) {
+    const isDuplicated =
+      await this.usersService.checkDuplicatedUserByEmail(email);
+    if (isDuplicated) throw new BadRequestException('email in use');
+
+    const hash = await this.hashPassword(password);
+
+    return this.usersService.create({ email, password: hash, name, age });
+  }
+
+  async signin({ id, email }: Partial<IUser>) {
+    const payload = { id, email };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
