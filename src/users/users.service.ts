@@ -27,7 +27,7 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
-  findByEmail(email: string) {
+  isExist(email: string) {
     return this.usersRepository.findOneBy({ email });
   }
 
