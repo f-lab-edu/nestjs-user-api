@@ -46,7 +46,6 @@ export class UsersService {
 
   async checkDuplicatedUserByEmail(email: string) {
     const user = await this.findByEmail(email);
-    if (user) return true;
-    return false;
+    return !!user;
   }
 }
