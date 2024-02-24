@@ -29,8 +29,9 @@ export class AuthService {
   }
 
   async signup({ email, password, name, age }: IUser) {
-    const user = await this.usersService.isExist(email);
-    if (user) throw new BadRequestException('email in use');
+    const isDuplicated =
+      await this.usersService.checkDuplicatedUserByEmail(email);
+    if (isDuplicated) throw new BadRequestException('email in use');
 
     const hash = await this.hashPassword(password);
 
@@ -38,7 +39,7 @@ export class AuthService {
   }
 
   async signin({ email, password }: Partial<IUser>) {
-    const user = await this.usersService.isExist(email);
+    const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('user not found');
 
     const { password: hash } = user;

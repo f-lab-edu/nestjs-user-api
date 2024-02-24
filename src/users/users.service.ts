@@ -27,7 +27,7 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
-  isExist(email: string) {
+  findByEmail(email: string) {
     return this.usersRepository.findOneBy({ email });
   }
 
@@ -42,5 +42,11 @@ export class UsersService {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');
     return this.usersRepository.remove(user);
+  }
+
+  async checkDuplicatedUserByEmail(email: string) {
+    const user = await this.findByEmail(email);
+    if (user) return true;
+    return false;
   }
 }
