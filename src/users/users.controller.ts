@@ -4,7 +4,6 @@ import {
   Post,
   Put,
   Delete,
-  Param,
   Body,
   UseGuards,
   UseFilters,
@@ -13,7 +12,7 @@ import {
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SignInUserDto } from './dtos/sign-in-user.dto';
-import { RefreshUserDto } from './dtos/refresh-user.dto';
+import { TokenUserDto } from './dtos/token-user.dto';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -47,28 +46,28 @@ export class UsersController {
 
   @Post('/refresh')
   @UseGuards(JwtRefreshTokenAuthGuard)
-  async refresh(@User() user: RefreshUserDto) {
+  async refresh(@User() user: TokenUserDto) {
     return this.authService.getAccessToken(user);
   }
 
-  @Get(':id')
+  @Get('/self')
   @UseGuards(JwtAccessTokenAuthGuard)
   @SerializeUser()
-  find(@Param('id') id: string) {
-    return this.usersService.find(parseInt(id));
+  find(@User() user: TokenUserDto) {
+    return this.usersService.find(user.id);
   }
 
-  @Put(':id')
+  @Put('/self')
   @UseGuards(JwtAccessTokenAuthGuard)
   @SerializeUser()
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), updateUserDto);
+  update(@User() user: TokenUserDto, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete('/self')
   @UseGuards(JwtAccessTokenAuthGuard)
   @SerializeUser()
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+  remove(@User() user: TokenUserDto) {
+    return this.usersService.remove(user.id);
   }
 }

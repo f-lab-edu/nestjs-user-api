@@ -1,4 +1,4 @@
-export class RefreshUserDto {
+export class TokenUserDto {
   id: number;
   email: string;
 }
