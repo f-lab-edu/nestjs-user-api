@@ -9,13 +9,7 @@ export class User {
   email: string;
 
   @Column()
-  password: string;
-
-  @Column()
   name: string;
-
-  @Column()
-  age: number;
 
   @Column({ default: '' })
   refreshToken: string;
