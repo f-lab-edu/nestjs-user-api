@@ -31,6 +31,10 @@ export class UsersService {
     return this.usersRepository.findOneBy({ email });
   }
 
+  findByRefreshToken(refreshToken: string) {
+    return this.usersRepository.findOneBy({ refreshToken });
+  }
+
   async update(id: number, info: Partial<IUser>) {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');

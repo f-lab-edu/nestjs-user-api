@@ -8,7 +8,8 @@ import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
 import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAccessTokenStrategy } from './strategies/jwt-access.strategy';
+import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -17,12 +18,18 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('jwtSecret'),
-        signOptions: { expiresIn: '60s' },
+        signOptions: { expiresIn: '1h' },
       }),
       inject: [ConfigService],
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    UsersService,
+    AuthService,
+    LocalStrategy,
+    JwtAccessTokenStrategy,
+    JwtRefreshTokenStrategy,
+  ],
 })
 export class UsersModule {}
