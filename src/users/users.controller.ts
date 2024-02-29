@@ -4,21 +4,22 @@ import {
   Post,
   Put,
   Delete,
-  Param,
   Body,
-  Session,
   UseGuards,
   UseFilters,
 } from '@nestjs/common';
 
-import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { SignInUserDto } from './dtos/sign-in-user.dto';
+import { TokenUserDto } from './dtos/token-user.dto';
+import { LoginUserDto } from './dtos/login-user.dto';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
+import { JwtAccessTokenAuthGuard } from './guards/jwt-access-auth.guard';
+import { JwtRefreshTokenAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { SerializeUser } from './interceptors/serialize-user.interceptor';
-import { AuthGuard } from './guards/auth.guard';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
+import { User } from './decorators/user-param.decorator';
+import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 
 @Controller('users')
 @UseFilters(new HttpExceptionFilter())
@@ -28,53 +29,40 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  @Post('/signup')
-  @SerializeUser()
-  async create(
-    @Body() body: CreateUserDto,
-    @Session() session: Record<string, any>,
-  ) {
-    const { email, password, name, age } = body;
-    const user = await this.authService.signup({ email, password, name, age });
-    session.userId = user.id;
-    return user;
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  async login() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  async loginCallback(@User() user: LoginUserDto) {
+    return this.authService.login(user);
   }
 
-  @Post('/signin')
-  @SerializeUser()
-  async signin(
-    @Body() body: SignInUserDto,
-    @Session() session: Record<string, any>,
-  ) {
-    const { email, password } = body;
-    const user = await this.authService.signin({ email, password });
-    session.userId = user.id;
-    return user;
+  @Post('refresh')
+  @UseGuards(JwtRefreshTokenAuthGuard)
+  async refresh(@User() user: TokenUserDto) {
+    return this.authService.getAccessToken(user);
   }
 
-  @Post('/signout')
-  signOut(@Session() session: Record<string, any>) {
-    session.userId = null;
+  @Get('self')
+  @UseGuards(JwtAccessTokenAuthGuard)
+  @SerializeUser()
+  find(@User() user: TokenUserDto) {
+    return this.usersService.find(user.id);
   }
 
-  @Get(':id')
-  @UseGuards(AuthGuard)
+  @Put('self')
+  @UseGuards(JwtAccessTokenAuthGuard)
   @SerializeUser()
-  find(@Param('id') id: string) {
-    return this.usersService.find(parseInt(id));
+  update(@User() user: TokenUserDto, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
-  @Put(':id')
-  @UseGuards(AuthGuard)
+  @Delete('self')
+  @UseGuards(JwtAccessTokenAuthGuard)
   @SerializeUser()
-  update(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), body);
-  }
-
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  @SerializeUser()
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+  remove(@User() user: TokenUserDto) {
+    return this.usersService.remove(user.id);
   }
 }

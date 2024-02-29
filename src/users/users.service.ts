@@ -12,12 +12,10 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create({ email, password, name, age }: IUser) {
+  async create({ email, name }: Partial<IUser>) {
     const user = this.usersRepository.create({
       email,
-      password,
       name,
-      age,
     });
     return this.usersRepository.save(user);
   }
@@ -31,6 +29,18 @@ export class UsersService {
     return this.usersRepository.findOneBy({ email });
   }
 
+  findByRefreshToken(refreshToken: string) {
+    return this.usersRepository.findOneBy({ refreshToken });
+  }
+
+  async findOrCreate({ email, name }: Partial<IUser>) {
+    let user = await this.findByEmail(email);
+    if (!user) {
+      user = await this.create({ email, name });
+    }
+    return user;
+  }
+
   async update(id: number, info: Partial<IUser>) {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');
@@ -42,10 +52,5 @@ export class UsersService {
     const user = await this.find(id);
     if (!user) throw new NotFoundException('user not found');
     return this.usersRepository.remove(user);
-  }
-
-  async checkDuplicatedUserByEmail(email: string) {
-    const user = await this.findByEmail(email);
-    return !!user;
   }
 }
