@@ -17,10 +17,7 @@ export class AuthService {
 
   private async sign({ id, email }: Partial<IUser>) {
     const payload = { email, sub: id };
-    return this.jwtService.signAsync(payload, {
-      secret: this.configService.get('jwtSecret'),
-      expiresIn: '1h',
-    });
+    return this.jwtService.signAsync(payload);
   }
 
   private async refresh() {
