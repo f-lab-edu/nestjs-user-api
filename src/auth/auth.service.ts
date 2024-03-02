@@ -2,10 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { UsersService } from './users.service';
-import { IUser } from './interfaces/user.interface';
-
-type Tokens = { accessToken: string; refreshToken: string };
+import { Tokens } from './interfaces/tokens.interface';
+import { UsersService } from '../users/users.service';
+import { IUser } from '../users/interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
