@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { IUserType } from '../interfaces/user-type.interface';
-import { Account } from '../../accounts/entities/account.entity';
+import { Account } from '../../accounts/models/account.entity';
 
 @Entity()
 export class User {

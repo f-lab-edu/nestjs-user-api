@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
-import { Account } from './entities/account.entity';
+import { Account } from './models/account.entity';
 
 const AMOUNT_TYPE = { BALANCE: 'balance', POINT: 'point' };
 
@@ -23,48 +23,37 @@ export class AccountsService {
       : this.accountRepository.findOneBy({ id });
   }
 
-  async updateBalance(
+  private async updateBalance(
     { id, change }: { id: string; change: number },
-    queryRunner?: QueryRunner,
+    queryRunner: QueryRunner,
   ) {
-    return queryRunner
-      ? queryRunner.manager.increment(
-          Account,
-          { id },
-          AMOUNT_TYPE.BALANCE,
-          change,
-        )
-      : this.accountRepository.increment({ id }, AMOUNT_TYPE.BALANCE, change);
+    return queryRunner.manager.increment(
+      Account,
+      { id },
+      AMOUNT_TYPE.BALANCE,
+      change,
+    );
   }
 
-  async updatePoint(
+  private async updatePoint(
     { id, change }: { id: string; change: number },
-    queryRunner?: QueryRunner,
+    queryRunner: QueryRunner,
   ) {
-    return queryRunner
-      ? queryRunner.manager.increment(
-          Account,
-          { id },
-          AMOUNT_TYPE.POINT,
-          change,
-        )
-      : this.accountRepository.increment({ id }, AMOUNT_TYPE.POINT, change);
+    return queryRunner.manager.increment(
+      Account,
+      { id },
+      AMOUNT_TYPE.POINT,
+      change,
+    );
   }
 
-  async update({ id, balanceChange, pointChange }, queryRunner?: QueryRunner) {
-    const balancePayload = { id, change: balanceChange };
-    const pointPayload = { id, change: pointChange };
-
-    if (queryRunner) {
-      await this.updateBalance(balancePayload, queryRunner);
-      return this.updatePoint(pointPayload, queryRunner);
-    }
+  async update({ id, balanceChange, pointChange }) {
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
-      await this.updateBalance(balancePayload, runner);
-      await this.updatePoint(pointPayload, runner);
+      await this.updateBalance({ id, change: balanceChange }, runner);
+      await this.updatePoint({ id, change: pointChange }, runner);
       await runner.commitTransaction();
     } catch (e) {
       console.error(e);
