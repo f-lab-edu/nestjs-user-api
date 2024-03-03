@@ -4,7 +4,7 @@ import { IUserType } from '../../users/interfaces/user-type.interface';
 
 @Injectable()
 export class Point {
-  private percent: 0.1;
+  private percent: number = 0.1;
   private amount: number;
 
   constructor(userType: IUserType, money: Money) {

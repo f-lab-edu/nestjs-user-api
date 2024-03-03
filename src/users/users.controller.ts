@@ -11,9 +11,11 @@ import {
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { TokenUserDto } from './dtos/token-user.dto';
+import { ChargeAmountDto } from './dtos/charge-amount.dto';
 import { UsersService } from './users.service';
 import { JwtAccessTokenAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { SerializeUser } from './interceptors/serialize-user.interceptor';
+import { SerializeAccount } from './interceptors/serialize-account.interceptor';
 import { User } from './decorators/user-param.decorator';
 
 @Controller('users')
@@ -40,5 +42,13 @@ export class UsersController {
   @SerializeUser()
   remove(@User() user: TokenUserDto) {
     return this.usersService.remove(user.id);
+  }
+
+  @Put('self/charge')
+  @UseGuards(JwtAccessTokenAuthGuard)
+  @SerializeAccount()
+  charge(@User() user: TokenUserDto, @Body() chargeAmountDto: ChargeAmountDto) {
+    const amount = chargeAmountDto.amount;
+    return this.usersService.charge(user.id, amount);
   }
 }

@@ -5,6 +5,8 @@ import { DataSource, Repository } from 'typeorm';
 import { IUser } from './interfaces/user.interface';
 import { User } from './models/user.entity';
 import { AccountsService } from '../accounts/accounts.service';
+import { Money } from '../accounts/models/money';
+import { Point } from '../accounts/models/point';
 
 @Injectable()
 export class UsersService {
@@ -78,5 +80,18 @@ export class UsersService {
     } finally {
       await runner.release();
     }
+  }
+
+  async charge(id: number, amount: number) {
+    const user = await this.find(id);
+    if (!user) throw new NotFoundException('user not found');
+    const money = new Money(amount);
+    const point = new Point(user.type, money);
+    await this.accountsService.update({
+      id: user.account.id,
+      balanceChange: money.value,
+      pointChange: point.value,
+    });
+    return this.accountsService.find({ id: user.account.id });
   }
 }
