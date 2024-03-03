@@ -1,4 +1,4 @@
-export enum UserType {
+export enum IUserType {
   PERSONAL = 'personal',
   BUSINESS = 'business',
 }

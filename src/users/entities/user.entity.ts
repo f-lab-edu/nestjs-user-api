@@ -1,13 +1,21 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
-import { UserType } from '../interfaces/user-type.interface';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Index,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
+import { IUserType } from '../interfaces/user-type.interface';
+import { Account } from '../../accounts/entities/account.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'enum', enum: UserType, default: UserType.PERSONAL })
-  type: UserType;
+  @Column({ type: 'enum', enum: IUserType, default: IUserType.PERSONAL })
+  type: IUserType;
 
   @Column()
   @Index({ unique: true })
@@ -19,4 +27,8 @@ export class User {
   @Column({ default: '' })
   @Index()
   refreshToken: string;
+
+  @OneToOne(() => Account, { nullable: false, eager: true })
+  @JoinColumn({ name: 'account_id' })
+  account: Account;
 }

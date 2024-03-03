@@ -1,8 +1,8 @@
-import { UserType } from './user-type.interface';
+import { IUserType } from './user-type.interface';
 
 export interface IUser {
   id: number;
-  type: UserType;
+  type: IUserType;
   email: string;
   name: string;
   refreshToken: string;
