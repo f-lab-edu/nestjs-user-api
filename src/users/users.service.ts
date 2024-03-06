@@ -30,8 +30,8 @@ export class UsersService {
       await runner.rollbackTransaction();
     } finally {
       await runner.release();
-      return user;
     }
+    return user;
   }
 
   find(id: number) {
