@@ -34,16 +34,18 @@ export class UsersService {
     return user;
   }
 
-  find(id: number) {
+  async find(id: number) {
     if (!id) throw new NotFoundException('user not found');
-    return this.usersRepository.findOneBy({ id });
+    const user = this.usersRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('user not found');
+    return user;
   }
 
-  findByEmail(email: string) {
+  async findByEmail(email: string) {
     return this.usersRepository.findOneBy({ email });
   }
 
-  findByRefreshToken(refreshToken: string) {
+  async findByRefreshToken(refreshToken: string) {
     return this.usersRepository.findOneBy({ refreshToken });
   }
 
@@ -57,14 +59,12 @@ export class UsersService {
 
   async update(id: number, info: Partial<IUser>) {
     const user = await this.find(id);
-    if (!user) throw new NotFoundException('user not found');
     Object.assign(user, info);
     return this.usersRepository.save(user);
   }
 
   async remove(id: number) {
     const user = await this.find(id);
-    if (!user) throw new NotFoundException('user not found');
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
@@ -82,7 +82,6 @@ export class UsersService {
 
   async charge(id: number, amount: number) {
     const user = await this.find(id);
-    if (!user) throw new NotFoundException('user not found');
     await this.accountsService.charge({
       id: user.account.id,
       userType: user.type,

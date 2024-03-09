@@ -18,13 +18,16 @@ export class AccountsService {
     return queryRunner.manager.save(Account, account);
   }
 
-  find({ id }: { id: string }, queryRunner?: QueryRunner) {
+  async find(
+    { id }: { id: string },
+    queryRunner?: QueryRunner,
+  ): Promise<Account> {
     return queryRunner
       ? queryRunner.manager.findOneBy(Account, { id })
       : this.accountRepository.findOneBy({ id });
   }
 
-  private async updateBalance(
+  private async incrementBalance(
     { id, change }: { id: string; change: number },
     queryRunner: QueryRunner,
   ) {
@@ -36,7 +39,7 @@ export class AccountsService {
     );
   }
 
-  private async updatePoint(
+  private async incrementPoint(
     { id, change }: { id: string; change: number },
     queryRunner: QueryRunner,
   ) {
@@ -53,8 +56,8 @@ export class AccountsService {
     await runner.connect();
     await runner.startTransaction();
     try {
-      await this.updateBalance({ id, change: balanceChange }, runner);
-      await this.updatePoint({ id, change: pointChange }, runner);
+      await this.incrementBalance({ id, change: balanceChange }, runner);
+      await this.incrementPoint({ id, change: pointChange }, runner);
       await runner.commitTransaction();
     } catch (e) {
       console.error(e);
