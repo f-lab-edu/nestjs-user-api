@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { Account } from './models/account.entity';
-import { AccountService } from './models/account.service';
+import { Money } from './models/money';
+import { Point } from './models/point';
 
 const AMOUNT_TYPE = { BALANCE: 'balance', POINT: 'point' };
 
@@ -68,11 +69,13 @@ export class AccountsService {
   }
 
   async charge({ id, userType, amount }) {
-    const { balanceChange, pointChange } = AccountService.calculateChange(
-      userType,
-      amount,
-    );
-    return this.update({ id, balanceChange, pointChange });
+    const money = new Money(amount);
+    const point = new Point(userType, money);
+    return this.update({
+      id,
+      balanceChange: money.value,
+      pointChange: point.value,
+    });
   }
 
   async remove({ id }: { id: string }, queryRunner: QueryRunner) {
