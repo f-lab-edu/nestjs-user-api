@@ -1,14 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { InitializationError } from '../../common/errors/initialization.error';
 
 @Injectable()
 export class Money {
-  constructor(private amount: number) {
-    if (amount < 0) {
-      throw new InitializationError('invalid amount');
-    }
-    this.amount = amount;
-  }
+  constructor(private amount: number) {}
 
   get value() {
     return this.amount;

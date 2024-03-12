@@ -13,7 +13,7 @@ export class FullPointStrategy implements PointStrategy {
     money: Money;
   }): number {
     if (userType === IUserType.BUSINESS) {
-      return money.value;
+      return Math.abs(money.value);
     }
     return 0;
   }

@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { FullPointService, PercentPointService } from './point.service';
+import { FullMoneyService, PercentMoneyService } from './money.service';
 import { Account } from './models/account.entity';
-import { Money } from './models/money';
 
 const AMOUNT_TYPE = { BALANCE: 'balance', POINT: 'point' };
 
@@ -12,6 +12,8 @@ export class AccountsService {
   constructor(
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private dataSource: DataSource,
+    private percentMoneyService: PercentMoneyService,
+    private fullMoneyService: FullMoneyService,
     private percentPointService: PercentPointService,
     private fullPointService: FullPointService,
   ) {}
@@ -77,8 +79,18 @@ export class AccountsService {
   }
 
   async charge({ id, userType, amount }) {
-    const money = new Money(amount);
+    const money = this.fullMoneyService.getMoney(amount);
     const point = this.percentPointService.getPoint({ userType, money });
+    return this.update({
+      id,
+      balanceChange: money.value,
+      pointChange: point.value,
+    });
+  }
+
+  async adjust({ id, userType, amount }) {
+    const money = this.percentMoneyService.getMoney(amount);
+    const point = this.fullPointService.getPoint({ userType, money });
     return this.update({
       id,
       balanceChange: money.value,
