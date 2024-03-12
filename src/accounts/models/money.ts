@@ -3,9 +3,7 @@ import { InitializationError } from '../../common/errors/initialization.error';
 
 @Injectable()
 export class Money {
-  private amount: number;
-
-  constructor(amount: number) {
+  constructor(private amount: number) {
     if (amount < 0) {
       throw new InitializationError('invalid amount');
     }
