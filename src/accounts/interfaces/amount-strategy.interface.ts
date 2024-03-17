@@ -1,5 +1,5 @@
 import { IUserType } from '../../users/interfaces/user-type.interface';
-import { Amount } from '../models/amount';
+import { Wallet } from '../models/wallet';
 
 export interface AmountStrategy {
   calculate({
@@ -8,5 +8,5 @@ export interface AmountStrategy {
   }: {
     amount: number;
     userType: IUserType;
-  }): Amount;
+  }): Wallet;
 }

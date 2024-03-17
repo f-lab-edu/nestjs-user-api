@@ -1,9 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
-import { FullPointService, PercentPointService } from './point.service';
-import { FullMoneyService, PercentMoneyService } from './money.service';
 import { Account } from './models/account.entity';
+import { Wallet } from './models/wallet';
 
 const AMOUNT_TYPE = { BALANCE: 'balance', POINT: 'point' };
 
@@ -12,10 +11,6 @@ export class AccountsService {
   constructor(
     @InjectRepository(Account) private accountRepository: Repository<Account>,
     private dataSource: DataSource,
-    private percentMoneyService: PercentMoneyService,
-    private fullMoneyService: FullMoneyService,
-    private percentPointService: PercentPointService,
-    private fullPointService: FullPointService,
   ) {}
 
   async create(queryRunner: QueryRunner) {
@@ -56,13 +51,13 @@ export class AccountsService {
     );
   }
 
-  private async update({ id, balanceChange, pointChange }) {
+  async update({ id, wallet }: { id: string; wallet: Wallet }) {
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
-      await this.incrementBalance({ id, change: balanceChange }, runner);
-      await this.incrementPoint({ id, change: pointChange }, runner);
+      await this.incrementBalance({ id, change: wallet.value.money }, runner);
+      await this.incrementPoint({ id, change: wallet.value.point }, runner);
       await runner.commitTransaction();
     } catch (e) {
       console.error(e);
@@ -76,25 +71,5 @@ export class AccountsService {
     const account = await this.find({ id }, queryRunner);
     if (!account) throw new NotFoundException('account not found');
     return queryRunner.manager.remove(Account, account);
-  }
-
-  async charge({ id, userType, amount }) {
-    const money = this.fullMoneyService.getMoney(amount);
-    const point = this.percentPointService.getPoint({ userType, money });
-    return this.update({
-      id,
-      balanceChange: money.value,
-      pointChange: point.value,
-    });
-  }
-
-  async adjust({ id, userType, amount }) {
-    const money = this.percentMoneyService.getMoney(amount);
-    const point = this.fullPointService.getPoint({ userType, money });
-    return this.update({
-      id,
-      balanceChange: money.value,
-      pointChange: point.value,
-    });
   }
 }

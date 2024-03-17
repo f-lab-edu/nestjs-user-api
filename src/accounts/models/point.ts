@@ -9,7 +9,7 @@ export class Point {
     if (amount < 0) {
       throw new InitializationError('invalid amount');
     }
-    this.amount = amount;
+    this.amount = Math.trunc(amount);
   }
 
   get value() {

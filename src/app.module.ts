@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import configuration from './config/configuration';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CronModule } from './cron/cron.module';
 import { JwtAccessTokenStrategy } from './auth/strategies/jwt-access.strategy';
 import { User } from './users/models/user.entity';
 import { Account } from './accounts/models/account.entity';
@@ -33,6 +34,7 @@ import { Account } from './accounts/models/account.entity';
     ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
+    CronModule,
   ],
   providers: [JwtAccessTokenStrategy],
 })

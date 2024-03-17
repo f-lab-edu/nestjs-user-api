@@ -6,11 +6,15 @@ import { UsersService } from './users.service';
 import { User } from './models/user.entity';
 import { Account } from '../accounts/models/account.entity';
 import { AccountsModule } from '../accounts/accounts.module';
+import { ChargeAmountStrategy } from '../accounts/strategies/charge-amount.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Account]), AccountsModule],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [
+    { provide: 'chargeAmountStrategy', useClass: ChargeAmountStrategy },
+    UsersService,
+  ],
   exports: [UsersService],
 })
 export class UsersModule {}
