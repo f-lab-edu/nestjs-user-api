@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class Money {
-  amount: number;
+  private amount: number;
 
   constructor(amount: number) {
     this.amount = Math.trunc(amount);
