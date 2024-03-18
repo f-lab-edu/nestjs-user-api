@@ -1,18 +1,15 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { IUser } from './interfaces/user.interface';
 import { User } from './models/user.entity';
 import { AccountsService } from '../accounts/accounts.service';
-import { AmountStrategy } from '../accounts/interfaces/amount-strategy.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-    @Inject('chargeAmountStrategy')
-    private readonly amountStrategy: AmountStrategy,
     private dataSource: DataSource,
     private accountsService: AccountsService,
   ) {}
@@ -85,18 +82,5 @@ export class UsersService {
     } finally {
       await runner.release();
     }
-  }
-
-  async charge(id: number, amount: number) {
-    const user = await this.find(id);
-    const wallet = this.amountStrategy.calculate({
-      amount,
-      userType: user.type,
-    });
-    await this.accountsService.update({
-      id: user.account.id,
-      wallet,
-    });
-    return this.accountsService.find({ id: user.account.id });
   }
 }

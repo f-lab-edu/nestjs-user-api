@@ -17,11 +17,15 @@ import { JwtAccessTokenAuthGuard } from '../auth/guards/jwt-access-auth.guard';
 import { SerializeUser } from './interceptors/serialize-user.interceptor';
 import { SerializeAccount } from './interceptors/serialize-account.interceptor';
 import { User } from './decorators/user-param.decorator';
+import { ChargeService } from '../accounts/charge/charge.service';
 
 @Controller('users')
 @UseFilters(new HttpExceptionFilter())
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private chargeService: ChargeService,
+  ) {}
 
   @Get('self')
   @UseGuards(JwtAccessTokenAuthGuard)
@@ -49,6 +53,6 @@ export class UsersController {
   @SerializeAccount()
   charge(@User() user: TokenUserDto, @Body() chargeAmountDto: ChargeAmountDto) {
     const amount = chargeAmountDto.amount;
-    return this.usersService.charge(user.id, amount);
+    return this.chargeService.charge(user.id, amount);
   }
 }

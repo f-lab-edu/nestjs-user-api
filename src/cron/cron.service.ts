@@ -1,16 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import * as _Promise from 'bluebird';
-import { AmountStrategy } from '../accounts/interfaces/amount-strategy.interface';
 import { UsersService } from '../users/users.service';
-import { AccountsService } from '../accounts/accounts.service';
+import { DepletionService } from '../accounts/deplation/depletion.service';
 
 @Injectable()
 export class CronService {
   constructor(
     private usersService: UsersService,
-    private accountsService: AccountsService,
-    @Inject('adjustAmountStrategy') private amountStrategy: AmountStrategy,
+    private depletionService: DepletionService,
   ) {}
 
   @Cron('0 8 * * *')
@@ -18,16 +16,7 @@ export class CronService {
     const users = await this.usersService.findAll();
     await _Promise.map(
       users,
-      async (user) => {
-        const wallet = this.amountStrategy.calculate({
-          amount: user.account.balance,
-          userType: user.type,
-        });
-        await this.accountsService.update({
-          id: user.account.id,
-          wallet,
-        });
-      },
+      (user) => this.depletionService.depleteWallet(user),
       { concurrency: 5 },
     );
   }
