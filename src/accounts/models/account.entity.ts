@@ -6,8 +6,8 @@ export class Account {
   id: string;
 
   @Column({ default: 0 })
-  balance: 0;
+  balance: number;
 
   @Column({ default: 0 })
-  point: 0;
+  point: number;
 }
