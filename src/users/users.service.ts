@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
 import { IUser } from './interfaces/user.interface';
 import { User } from './models/user.entity';
 import { AccountsService } from '../accounts/accounts.service';
+import { AmountStrategy } from '../accounts/interfaces/amount-strategy.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
+    @Inject('chargeAmountStrategy')
+    private readonly amountStrategy: AmountStrategy,
     private dataSource: DataSource,
     private accountsService: AccountsService,
   ) {}
@@ -34,9 +37,13 @@ export class UsersService {
     return user;
   }
 
+  async findAll() {
+    return this.usersRepository.find();
+  }
+
   async find(id: number) {
     if (!id) throw new NotFoundException('user not found');
-    const user = this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOneBy({ id });
     if (!user) throw new NotFoundException('user not found');
     return user;
   }
@@ -82,10 +89,13 @@ export class UsersService {
 
   async charge(id: number, amount: number) {
     const user = await this.find(id);
-    await this.accountsService.charge({
-      id: user.account.id,
-      userType: user.type,
+    const wallet = this.amountStrategy.calculate({
       amount,
+      userType: user.type,
+    });
+    await this.accountsService.update({
+      id: user.account.id,
+      wallet,
     });
     return this.accountsService.find({ id: user.account.id });
   }

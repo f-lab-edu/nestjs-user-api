@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { Account } from './models/account.entity';
-import { Money } from './models/money';
-import { Point } from './models/point';
+import { Wallet } from './models/wallet';
 
 const AMOUNT_TYPE = { BALANCE: 'balance', POINT: 'point' };
 
@@ -52,13 +51,13 @@ export class AccountsService {
     );
   }
 
-  private async update({ id, balanceChange, pointChange }) {
+  async update({ id, wallet }: { id: string; wallet: Wallet }) {
     const runner = this.dataSource.createQueryRunner();
     await runner.connect();
     await runner.startTransaction();
     try {
-      await this.incrementBalance({ id, change: balanceChange }, runner);
-      await this.incrementPoint({ id, change: pointChange }, runner);
+      await this.incrementBalance({ id, change: wallet.value.money }, runner);
+      await this.incrementPoint({ id, change: wallet.value.point }, runner);
       await runner.commitTransaction();
     } catch (e) {
       console.error(e);
@@ -66,16 +65,6 @@ export class AccountsService {
     } finally {
       await runner.release();
     }
-  }
-
-  async charge({ id, userType, amount }) {
-    const money = new Money(amount);
-    const point = new Point(userType, money);
-    return this.update({
-      id,
-      balanceChange: money.value,
-      pointChange: point.value,
-    });
   }
 
   async remove({ id }: { id: string }, queryRunner: QueryRunner) {
