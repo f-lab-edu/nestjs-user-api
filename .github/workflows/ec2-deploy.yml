@@ -1,0 +1,40 @@
+name: ec2-deploy
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node ENV
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run test
+        run: npm run test
+  deploy:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy application
+        env:
+          PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.HOSTNAME }}
+          USERNAME: ${{ secrets.USERNAME }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -i private_key ${USERNAME}@${HOSTNAME}
+
+          cd ~/nestjs-user-api
+          git checkout main && git pull origin main
+          npm ci
+          npm run build
+          ps ax | grep -m 1 'node dist/main' | awk {'print $1'} | xargs kill -9
+          nohup npm run start:prod &
