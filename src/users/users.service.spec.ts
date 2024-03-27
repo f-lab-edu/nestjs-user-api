@@ -5,16 +5,16 @@ import { UsersService } from './users.service';
 import { User } from './models/user.entity';
 import { AccountsService } from '../accounts/accounts.service';
 import { Account } from '../accounts/models/account.entity';
-import { IUserType } from './interfaces/user-type.interface';
+import { IUser } from './interfaces/user.interface';
 
 const TEST_ACCOUNT = {
   id: 'testAccountId',
   balance: 0,
   point: 0,
 };
-const TEST_PERSONAL_USER = {
+const TEST_PERSONAL_USER: IUser = {
   id: 1,
-  type: IUserType.PERSONAL,
+  type: 'personal',
   email: 'hello@nestjs.com',
   name: 'hello',
   refreshToken: 'testToken',
