@@ -6,6 +6,7 @@ import { User } from './models/user.entity';
 import { AccountsService } from '../accounts/accounts.service';
 import { Account } from '../accounts/models/account.entity';
 import { IUser } from './interfaces/user.interface';
+import { ChargeAmountStrategy } from '../accounts/strategies/charge-amount.strategy';
 
 const TEST_ACCOUNT = {
   id: 'testAccountId',
@@ -66,6 +67,7 @@ describe('UsersService', () => {
           provide: DataSource,
           useFactory: dataSourceMockFactory,
         },
+        { provide: 'chargeAmountStrategy', useClass: ChargeAmountStrategy },
       ],
     }).compile();
 
